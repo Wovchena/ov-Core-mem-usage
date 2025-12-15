@@ -17,13 +17,13 @@ def print_memory_usage(old, new):
 
 
 def n_models_usage(cores, device):
-    model_device = device.split(":")[0]
+    model_device = "NPU" if device == "NPU:CPU" else device
     old = bytes_state()
     holder = []
     for core in cores:
         param1 = ov.opset8.parameter([], np.float32)
-        compiled_model1 = core.compile_model(ov.Model([param1], [param1], "identity"), model_device, {'NPU_USE_NPUW': 'YES', 'NPUW_DEVICES': 'CPU', 'NPUW_ONLINE_PIPELINE': 'NONE'} if device == "NPU:CPU" else {})
-        ireq = compiled_model1.create_infer_request()
+        compiled_model = core.compile_model(ov.Model([param1], [param1], "identity"), model_device, {'NPU_USE_NPUW': 'YES', 'NPUW_DEVICES': 'CPU', 'NPUW_ONLINE_PIPELINE': 'NONE'} if device == "NPU:CPU" else {})
+        ireq = compiled_model.create_infer_request()
         ireq.infer()
         holder.append(ireq)
     new = bytes_state()
@@ -47,10 +47,10 @@ def main():
     del holder
     del holder2
     gc.collect()
-    for device in "MULTI:CPU", "NPU:CPU", "CPU", "GPU":#, "NPU":
+    for device in "MULTI:CPU", "NPU:CPU", "CPU", "GPU", "NPU":
         n_models_usage([ov.Core()], device)
     print("Warmed up\n")
-    for device in "MULTI:CPU", "NPU:CPU", "CPU", "GPU":#, "NPU":
+    for device in "MULTI:CPU", "NPU:CPU", "CPU", "GPU", "NPU":
         for n in 1, 2, 4, 8, 16, 32, 1000:
             gc.collect()
             n_models_usage((ov.Core() for _ in range(n)), device)  # Warm up
