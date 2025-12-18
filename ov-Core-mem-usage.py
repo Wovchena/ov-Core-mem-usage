@@ -47,7 +47,7 @@ def main():
     del holder
     del holder2
     gc.collect()
-    devices = "CPU", "GPU", "NPU:CPU", "MULTI:CPU", "NPU"
+    devices = "CPU", "GPU", "NPU:CPU", "MULTI:CPU(1)"#, "NPU"
     for device in devices:
         n_models_usage([ov.Core()], device)
     print("Warmed up\n")
